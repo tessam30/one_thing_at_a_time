@@ -42,7 +42,7 @@
     
 # Load Helper functions
     
-    source("Scripts/helper-call_all_helpers.R")
+  source("Scripts/helper-call_all_helpers.R")
 
 # CUSTOM IP TABLES --------------------------------------------------------
     
@@ -99,6 +99,7 @@
 # PARTNER -----------------------------------------------------------------
 
     # Loop over function and create tables for each of the main C&T mechs
+    df_genie %>% filter(fiscal_year == metadata$curr_fy) %>% distinct(mech_code, mech_name) %>% prinf()
     mech_list <- c(82075, 17413, 82086, 17399)
     map(mech_list, ~mk_ptr_tbl(df_genie, .x))
     
@@ -106,14 +107,14 @@
     df_safe <- df_genie %>% 
       filter(mech_code %in% c(86412, 17413)) %>% 
       mutate(mech_code = "17413", 
-             mech_name = "SAFE (with ZIHA Targets)")
+             mech_name = "SAFE (with ZIH Targets)")
     
     
     df_safe %>% 
       make_mdb_df() %>% 
       reshape_mdb_df(.,  metadata$curr_pd) %>% 
-      mutate(operatingunit = ifelse(operatingunit == "Global", "SAFE (Adjusted for ZIHA Target Shift)", operatingunit)) %>% 
-      create_mdb(ou = "SAFE (Adjusted for ZIHA Target Shift)", type = "main", metadata$curr_pd, metadata$source) %>% 
+      mutate(operatingunit = ifelse(operatingunit == "Global", "SAFE (Adjusted for ZIH Target Shift)", operatingunit)) %>% 
+      create_mdb(ou = "SAFE (Adjusted for ZIH Target Shift)", type = "main", metadata$curr_pd, metadata$source) %>% 
       gtsave(., path = "Images", filename = glue::glue("SAFE_ADJUSTED_mdb_main.png.png"))  
     
     
@@ -130,7 +131,7 @@
       gtsave(., path = "Images", filename = glue::glue("DISCOVER_mdb_main.png.png"))  
     
     
-    
+    make_mdb_df(df_genie %>% filter(mech_code == 86412))
     # ZAMBIA OVERALL TABLE
     df_genie %>% 
       filter(indicator == "OVC_SERV", snu1 == "Copperbelt Province",
