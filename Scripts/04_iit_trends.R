@@ -319,10 +319,11 @@
 
 # OVERALL IIT -------------------------------------------------------------
 
-    df_site %>% 
+  df_iit_age <-   df_site %>% 
       filter(funding_agency == "USAID",
              indicator %in% c("TX_ML", "TX_CURR", "TX_NEW", "TX_RTT"), 
              standardizeddisaggregate %in% c("Age/Sex/HIVStatus", "Age/Sex/ARTNoContactReason/HIVStatus"), 
+             trendscoarse != "Unknown Age",
              mech_name != "Placeholder - 86412") %>% 
       group_by(fiscal_year, indicator, trendscoarse) %>% 
       summarise(across(starts_with("qtr"), sum, na.rm = TRUE), .groups = "drop") %>% 
@@ -334,5 +335,54 @@
       ungroup()%>% 
       rowwise() %>% 
       mutate(iit = tx_ml / sum(tx_curr_lag1, tx_new, na.rm = TRUE))  %>% 
-      arrange(trendscoarse)
+      arrange(trendscoarse) %>% 
+      filter(!is.na(tx_curr_lag1))
+    
+    df_iit_spark_age <- 
+      df_iit_age %>% 
+      select(period, trendscoarse, iit) %>% 
+      arrange(trendscoarse, period) %>% 
+      group_by(trendscoarse) %>% 
+      summarize(spark_iit = list(iit), .groups = "drop")  
+    
+    df_iit_age %>% 
+      select(period, trendscoarse, iit) %>%
+      spread(period, iit) %>% 
+      left_join(., df_iit_spark_age) %>% 
+      gt() %>%
+      gt_plt_sparkline(spark_iit, 
+                       same_limit = , type = "shaded", 
+                       fig_dim = c(15, 30),
+                       palette = c(grey70k, grey90k, old_rose_light, scooter_med, grey10k),
+                       label = F) %>% 
+      fmt_percent(columns = where(is.numeric)) %>% 
+      cols_label(trendscoarse = "AGE",
+                 spark_iit = "",
+                 FY23Q1 = "Q1",
+                 FY22Q2 = "Q2",
+                 FY22Q3 = "Q3",
+                 FY22Q4 = "Q4",
+                 FY23Q2 = "Q2",
+                 FY23Q3 = "Q3"
+                 
+      ) %>% 
+      tab_header(
+        title = glue("INTERRUPTION IN TREATMENT SUMMARY BY AGE"),
+      ) %>% 
+      tab_spanner(
+        label = "FY22",
+        columns = 2:4
+      ) %>% 
+      tab_spanner(
+        label = "FY23",
+        columns = 5
+      ) %>% 
+      sub_missing(columns = everything(), missing_text = "-") %>% 
+      tab_source_note(
+        source_note = gt::md(glue("IIT = TX_ML / TX_CURR_LAG1 + TX_NEW\n
+                        Source: {metadata$source}"))) %>% 
+      tab_options(
+        source_notes.font.size = px(10)) %>% 
+      gt_theme_nytimes() %>% 
+      gtsave_extra("Images/USAID_iit_age.png")    
     
