@@ -33,7 +33,9 @@
     ref_id <- "879dd403"
     
   # Functions  
-  
+    # Load Helper functions
+    
+    source("Scripts/helper-call_all_helpers.R")
 
 # LOAD DATA ============================================================================  
 
@@ -44,9 +46,7 @@
       clean_agency() %>% 
       swap_targets()
     
-    # Load Helper functions
-    
-    source("Scripts/helper-call_all_helpers.R")
+
 
 # MUNGE ============================================================================
   
