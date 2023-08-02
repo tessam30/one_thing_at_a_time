@@ -156,7 +156,7 @@ df_kp <- df_genie %>%
   filter(indicator %in% c("HTS_TST", "HTS_TST_POS", "HTS_RECENT", 
                           "KP_PREV", "PrEP_CT", "PrEP_CURR", "PrEP_NEW",
                           "TX_CURR", "TX_NEW", "TX_PVLS"),
-         standardizeddisaggregate %in% c("KeyPop", "KeyPop/HIVStatus", 
+         standardizeddisaggregate %in% c("KeyPop", "KeyPop/Indication/HIVStatus", 
                                          "KeyPopAbr", "KeyPop/Result"),
          fiscal_year == metadata$curr_fy, 
          funding_agency == "USAID") %>% 
