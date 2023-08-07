@@ -4,9 +4,9 @@
 # REF ID:  3b06bf60
 # LICENSE: MIT
 # DATE:   2023-07-27
-# NOTES:   
+# NOTES:  In the future, exclude community partners in graphic
 
-# LOCALS & SETUP ============================================================================
+# LOCALS & SETUP ===============================================================
 
   # Libraries
     library(gagglr)
@@ -29,12 +29,13 @@
     msd_path_old <- return_latest(folderpath = file.path(merdata, "Archive"),
                                   pattern = "PSNU_IM_FY20-23.*Zambia.zip")
     
+    
+    site_path <- "Data/Genie-SiteByIMs-Zambia-Daily-2023-07-26.zip"
+    
+    
     # Grab metadata
     get_metadata(genie_path)
 
-  # Grab metadata
-   get_metadata(file_path)
-  
   # REF ID for plots
     ref_id <- "3b06bf60"
     
@@ -86,6 +87,28 @@
 
 # LOAD DATA ============================================================================  
 
+    # What community partners should be excluded from the calculations?
+    # Need to use the site level msd to exclude community sites from the calc
+    # Purple bar, showing community partners and non-community partners
+    
+    # Exclude the community sites
+    df_site <-  read_psd(site_path) %>% 
+      filter(funding_agency == "USAID", 
+             sitetype != "Community") %>% 
+      fix_mech_names() %>% 
+      mutate(snu1 = str_remove_all(snu1, " Province")) %>% 
+      clean_agency() %>% 
+      swap_targets()  
+    
+    
+    
+    
+    
+    df_genie %>% filter(indicator == "HTS_TST_POS", 
+                        standardizeddisaggregate == "Total Numerator",
+                        fiscal_year == 2023) %>% View()
+    
+    
     df_msd_old <- read_msd(msd_path_old) %>% 
       filter(fiscal_year %in% c(2020, 2021), funding_agency == "USAID")
     
