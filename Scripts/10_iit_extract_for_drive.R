@@ -26,6 +26,9 @@
     load_secrets()
     site_path <- "Data/Genie-SiteByIMs-Zambia-Daily-2023-07-26.zip"
     
+  # Excel file with smartcare sites flagged
+    sc_data <- "Data/CBP smartcare plus facility list.xlsx"
+    
   # Grab metadata
     get_metadata(site_path)
   
@@ -43,6 +46,9 @@
       mutate(snu1 = str_remove_all(snu1, " Province")) %>% 
       clean_agency() %>% 
       swap_targets()
+    
+    df_sc <- readxl::read_excel(sc_data) %>% 
+      janitor::clean_names()
 
 # MUNGE ============================================================================
   
@@ -128,20 +134,30 @@
       mutate(positivity = hts_tst_pos / hts_tst, .after = hts_tst_pos) 
     
   # Combine em all
-    df_iit %>% 
+    df_iit_extract <- df_iit %>% 
       filter(str_detect(period, metadata$curr_fy_lab),
-             str_detect(snu1, "Central|Copperbelt")) %>% 
-      group_by(facility, snu1, mech_code) %>% 
-      mutate(iit_flag = ifelse(iit > .05, 1, 0),
+             trendscoarse != "Unknown Age") %>% 
+      group_by(facility, snu1, mech_code, trendscoarse) %>% 
+      mutate(iit_flag = ifelse(iit > .025, 1, 0),
              tot_iit = sum(iit_flag, na.rm = T)) %>% 
       ungroup() %>% 
+      mutate(iit = ifelse(is.infinite(iit), NA_real_, iit))
       filter(tot_iit >= 2) %>% 
       left_join(., df_site_hts) %>% 
-      left_join(., df_ovc_site) %>% View()
-  
+      left_join(., df_ovc_site) %>% 
+      left_join(., df_sc, by = c("facilityuid" = "orgunituid"))
+    
+   googlesheets4::write_sheet(data = df_iit_extract, ss = "1EHUknVo6W2Ra4RF_5pYZuyNJlIja16piesATnai66R4", sheet = "iit_summary")
+    
+    
 # VIZ ============================================================================
 
-  #  
+  df_iit_extract %>% 
+      filter(snu1 == "Copperbelt", trendscoarse == "<15") %>% 
+      ggplot(aes(x = period, y = iit, color = already_running_on_sc)) +
+      geom_point(position = position_jitter()) +
+      facet_wrap(~facility) +
+      si_style(facet_space = 0.25)
 
 # SPINDOWN ============================================================================
 
