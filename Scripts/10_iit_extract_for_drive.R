@@ -138,14 +138,16 @@
       filter(str_detect(period, metadata$curr_fy_lab),
              trendscoarse != "Unknown Age") %>% 
       group_by(facility, snu1, mech_code, trendscoarse) %>% 
-      mutate(iit_flag = ifelse(iit > .025, 1, 0),
+      mutate(iit_flag = ifelse(iit > .05, 1, 0),
              tot_iit = sum(iit_flag, na.rm = T)) %>% 
       ungroup() %>% 
-      mutate(iit = ifelse(is.infinite(iit), NA_real_, iit))
       filter(tot_iit >= 2) %>% 
       left_join(., df_site_hts) %>% 
       left_join(., df_ovc_site) %>% 
-      left_join(., df_sc, by = c("facilityuid" = "orgunituid"))
+      left_join(., df_sc, by = c("facilityuid" = "orgunituid")) %>% 
+      mutate(iit = ifelse(is.infinite(iit), NA_real_, iit), 
+             vlc = ifelse(is.infinite(vlc), NA_real_, vlc)) %>% 
+      arrange(facility, mech_code, trendscoarse, period)
     
    googlesheets4::write_sheet(data = df_iit_extract, ss = "1EHUknVo6W2Ra4RF_5pYZuyNJlIja16piesATnai66R4", sheet = "iit_summary")
     
