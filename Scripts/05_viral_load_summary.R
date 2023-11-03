@@ -20,11 +20,12 @@
     library(glue)
     library(gt)
     library(gtExtras)
+    library(extrafont)
     
     
   # SI specific paths/functions  
     load_secrets()
-    genie_path <- "Data/Genie-PSNUByIMs-Zambia-Daily-2023-07-26.zip"
+    genie_path <- return_latest(folder = si_path(), pattern = "PSNU_IM.*Zambia")
     merdata <- file.path(glamr::si_path("path_msd"))
     msd_path_old <- return_latest(folderpath = file.path(merdata, "Archive"),
                                   pattern = "PSNU_IM_FY20-23.*Zambia.zip")
@@ -103,17 +104,17 @@
 
     # Modify below depending on whether it is peds or all
     
-    num_pds <- length(unique(df_vl$period))
-    end_vls <- pull_last_val(df_vl, vls)
-    end_vlc <- pull_last_val(df_vl, vlc)
-    gap <- vl_gap(df_vl)
-    end_tx_pvls <- pull_last_val(df_vl, tx_pvls_d)
-    end_tx_lag <- pull_last_val(df_vl, tx_curr_lag2)
+    num_pds <- length(unique(df_vl_peds$period))
+    end_vls <- pull_last_val(df_vl_peds, vls)
+    end_vlc <- pull_last_val(df_vl_peds, vlc)
+    gap <- vl_gap(df_vl_peds)
+    end_tx_pvls <- pull_last_val(df_vl_peds, tx_pvls_d)
+    end_tx_lag <- pull_last_val(df_vl_peds, tx_curr_lag2)
 
 
 # PEDS --------------------------------------------------------------------
 
-    top <- df_vl %>% 
+    top <- df_vl_peds %>% 
       ggplot(aes(x = period, group = 1)) +
       geom_line(aes(y = vls), color = burnt_sienna) +
       geom_point(aes(y = vls), shape = 21, fill = burnt_sienna, size = 3,
@@ -139,13 +140,12 @@
       expand_limits(x = c(1, num_pds + 2), y = c(0.7, 1.05)) +
       theme(axis.text.y = element_blank(), 
             axis.text.x = element_blank()) +
-      labs(x = NULL, y = NULL)
-    
+      labs(x = NULL, y = NULL) 
     
     
     # Need TX_CURR_lag2 - TX_PVLS_D
     
-    bottom <- df_vl %>% 
+    bottom <- df_vl_peds %>% 
       ggplot(aes(x = period)) +
       geom_col(aes(y = tx_curr_lag2), fill = grey10k, width = 0.75) +
       geom_col(aes(y = tx_pvls_d), fill = denim, width = 0.75) +
@@ -168,10 +168,10 @@
       labs(caption = metadata$caption)
     
     top / bottom + plot_layout(heights = c(1, 3)) +
-      plot_annotation(title = glue("USAID VIRAL LOAD SUMMARY THROUGH {metadata$curr_pd}")) &
+      plot_annotation(title = glue("USAID PEDIATRIC VIRAL LOAD SUMMARY THROUGH {metadata$curr_pd}")) &
       theme(plot.tag = element_text(family = "Source Sans Pro"))    
     
-    si_save("Images/VL_summary_2023.png", scale = 1.25)
+    si_save("Images/Adhoc/VL_PEDS_summary_2023.png", scale = 1.25)
     
 
 # BY IP -------------------------------------------------------------------
@@ -230,7 +230,7 @@
       plot_annotation(title = glue("VIRAL LOAD SUMMARY FOR {metadata$curr_fy} BY PARTNER")) &
       theme(plot.tag = element_text(family = "Source Sans Pro"))
     
-    si_save("Images/VL_summary_partners.png", scale = 1.25)    
+    si_save("Images/Adhoc/VL_summary_partners.png", scale = 1.25)    
     
 # BY PROVINCE ============================================================================
     
@@ -281,7 +281,7 @@
       labs(x = NULL, y = NULL) +
       labs(title = "USAID VIRAL LOAD COVERAGE AND VIRAL LOAD SUPPRESSION TRENDS", 
            caption = glue("{metadata$caption}"))
-    si_save("Images/ZMB_vls_vlc_by_snu1.png")        
+    si_save("Images/Adhoc/ZMB_vls_vlc_by_snu1.png")        
     
     
     
