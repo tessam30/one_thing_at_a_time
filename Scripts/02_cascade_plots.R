@@ -23,11 +23,11 @@
     
   # SI specific paths/functions  
     load_secrets()
-    genie_path <- "Data/Genie-PSNUByIMs-Zambia-Daily-2023-07-26.zip"
-
+    #genie_path <- "Data/Genie-PSNUByIMs-Zambia-Daily-2023-07-26.zip"
+    msd_clean_path <- return_latest(folder = si_path(), pattern = "PSNU_IM.*Zambia")
       
   # Grab metadata
-   get_metadata(genie_path)
+   get_metadata(msd_clean_path)
   
   # REF ID for plots
     ref_id <- "879dd403"
@@ -39,7 +39,7 @@
 
 # LOAD DATA ============================================================================  
 
-    df_genie <- read_psd(genie_path) %>% 
+    df_genie <- read_psd(msd_clean_path) %>% 
       filter(funding_agency == "USAID") %>% 
       fix_mech_names() %>% 
       mutate(snu1 = str_remove_all(snu1, " Province")) %>% 

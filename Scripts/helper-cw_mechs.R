@@ -2,7 +2,7 @@
 
 mech_names_cw <- tibble::tribble(
                   ~mech_name_short,                                                                         ~mech_name, ~mech_code,
-                            "ZIHA",                                               "[Placeholder - 86412 Zambia USAID]",     "86412",
+                             "ZIH",                                               "[Placeholder - 86412 Zambia USAID]",     "86412",
                       "ACTION HIV",                                      "Action to HIV Epidemic Control (ACTION HIV)",     "82075",
                         "CHEKUP I", "Controlling HIV Epidemic for Key and Underserved Populations I ( USAID CHEKUP I)",     "85117",
                        "CHEKUP II",      "Controlling HIV Epidemic for Key and Underserved Populations II (CHEKUP II)",    "160806",
@@ -18,7 +18,10 @@ mech_names_cw <- tibble::tribble(
                         "Stop GBV",                              "USAID/Stop Gender Based Violence Project (Stop GBV)",     "18487",
                           "Z-CHPP",                           "USAID/Zambia Community HIV Prevention Project (Z-CHPP)",     "17410",
                       "ZAM Health",                                             "Zambia Accessible Markets for Health",     "82086",
-             )
+                             "ZIH",                                                                             "ZIHA",     "86412",
+                          "TB-LON",                                                                           "TB-LON",     "86411",
+              "86413 Zambia USAID",                                               "[Placeholder - 86413 Zambia USAID]",     "86413"
+              )
 
 
 prov_agency_cw <- googlesheets4::read_sheet(ss = "1JUxbHkOg_k5yHWJ9A7PZOmU6Pj_i2UbgDTpU4mhuw6o")

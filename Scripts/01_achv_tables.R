@@ -25,20 +25,21 @@
     
   # SI specific paths/functions  
     load_secrets()
-    genie_path <- "Data/Genie-PSNUByIMs-Zambia-Daily-2023-07-26.zip"
+    #genie_path <- "Data/Genie-PSNUByIMs-Zambia-Daily-2023-07-26.zip"
+    msd_clean_path <- return_latest(folder = si_path(), pattern = "PSNU_IM.*Zambia")
       
   # Grab metadata
-   get_metadata(genie_path)
+   get_metadata(msd_clean_path)
   
   # REF ID for plots
     ref_id <- "6cd83849"
     
   # Functions  
-  
+  legend = gt::md(glue::glue("<img src= '{legend}' style='height:20px;'> "))
 
 # LOAD DATA ============================================================================  
 
-  df_genie <- read_psd(genie_path)
+  df_msd <- read_psd(msd_clean_path)
     
 # Load Helper functions
     
@@ -60,27 +61,27 @@
         pull(mech_name)
       
       ip_mdb %>%   
-        create_mdb(ou = "Zambia", type = "main", metadata$curr_pd, metadata$source) %>% 
+        create_mdb(ou = "Zambia", type = "main", metadata$curr_pd, metadata$source, legend = legend_chunk) %>% 
         tab_header(
           title = glue::glue("{mech_name} PERFORMANCE SUMMARY")
         ) %>% 
-        gtsave(path = "Images", filename = glue::glue("{mech_name}_mdb_main.png"))
+        gtsave(path = "Images/Adhoc", filename = glue::glue("{mech_name}_mdb_main.png"))
     }    
 
 # ACHV TABLES -------------------------------------------------------------
 
-    mdb_df   <- make_mdb_df(df_genie)
+    mdb_df   <- make_mdb_df(df_msd)
     mdb_tbl  <- reshape_mdb_df(mdb_df, metadata$curr_pd) 
     
     # Create the treatment data frame needed for derived indicators
-    mdb_df_tx    <- make_mdb_tx_df(df_genie)
+    mdb_df_tx    <- make_mdb_tx_df(df_msd)
     mdb_tbl_tx   <- reshape_mdb_tx_df(mdb_df_tx, metadata$curr_pd) 
     
     mdb_tbl %>% 
       filter(agency == "USAID") %>% 
-      create_mdb(ou = "Zambia", type = "main", metadata$curr_pd, metadata$source) %>%
+      create_mdb(ou = "Zambia", type = "main", metadata$curr_pd, metadata$source, legend = legend_chunk) %>%
       shrink_rows() %>% 
-      gtsave_extra(path = "Images", filename = glue::glue("Zambia_{metadata$curr_pd}_mdb_main.png"))  
+      gtsave_extra(path = "Images/Adhoc", filename = glue::glue("Zambia_{metadata$curr_pd}_mdb_main.png"))  
     
     
     create_mdb(mdb_tbl_tx %>% 
@@ -92,19 +93,19 @@
         row_group.padding = px(2),
         heading.padding = px(1)
       ) %>% 
-      gtsave_extra(., path = "Images", filename = glue::glue("{metadata$curr_pd}_Zambia_MMD_VL_MD.png")) 
+      gtsave_extra(., path = "Images/Adhoc", filename = glue::glue("{metadata$curr_pd}_Zambia_MMD_VL_MD.png")) 
 
     
 
 # PARTNER -----------------------------------------------------------------
 
     # Loop over function and create tables for each of the main C&T mechs
-    df_genie %>% filter(fiscal_year == metadata$curr_fy) %>% distinct(mech_code, mech_name) %>% prinf()
+    df_msd %>% filter(fiscal_year == metadata$curr_fy) %>% distinct(mech_code, mech_name) %>% prinf()
     mech_list <- c(82075, 17413, 82086, 17399)
-    map(mech_list, ~mk_ptr_tbl(df_genie, .x))
+    map(mech_list, ~mk_ptr_tbl(df_msd, .x))
     
     # Special table that maps ZIHA target back to SAFE
-    df_safe <- df_genie %>% 
+    df_safe <- df_msd %>% 
       filter(mech_code %in% c(86412, 17413)) %>% 
       mutate(mech_code = "17413", 
              mech_name = "SAFE (with ZIH Targets)")
@@ -115,12 +116,12 @@
       reshape_mdb_df(.,  metadata$curr_pd) %>% 
       mutate(operatingunit = ifelse(operatingunit == "Global", "SAFE (Adjusted for ZIH Target Shift)", operatingunit)) %>% 
       create_mdb(ou = "SAFE (Adjusted for ZIH Target Shift)", type = "main", metadata$curr_pd, metadata$source) %>% 
-      gtsave(., path = "Images", filename = glue::glue("SAFE_ADJUSTED_mdb_main.png.png"))  
+      gtsave(., path = "Images/Adhoc", filename = glue::glue("SAFE_ADJUSTED_mdb_main.png.png"))  
     
     
     # Adjust DISCOVER's tables, they do not report on semi-annual indicators
     df_disc_achv <- 
-      df_genie %>% 
+      df_msd %>% 
       filter(mech_code == 17399) %>% 
       make_mdb_df() 
     
@@ -128,12 +129,12 @@
       reshape_mdb_df(.,  metadata$curr_pd) %>% 
       mutate(operatingunit = ifelse(operatingunit == "Global", "DISCOVER", operatingunit)) %>% 
       create_mdb(ou = "DISCOVER", type = "main", metadata$curr_pd, metadata$source) %>% 
-      gtsave(., path = "Images", filename = glue::glue("DISCOVER_mdb_main.png.png"))  
+      gtsave(., path = "Images/Adhoc", filename = glue::glue("DISCOVER_mdb_main.png.png"))  
     
     
-    make_mdb_df(df_genie %>% filter(mech_code == 86412))
+    make_mdb_df(df_msd %>% filter(mech_code == 86412))
     # ZAMBIA OVERALL TABLE
-    df_genie %>% 
+    df_msd %>% 
       filter(indicator == "OVC_SERV", snu1 == "Copperbelt Province",
              standardizeddisaggregate == "Total Numerator") %>% 
       group_by(funding_agency, fiscal_year, indicator) %>% 
@@ -146,7 +147,7 @@
     
     mech_list <- c(82075, 17413, 17399,  82086)
     
-    df_usaid <- df_genie %>% 
+    df_usaid <- df_msd %>% 
       filter(funding_agency == "USAID")
     
     df_achv <- df_usaid %>% 
@@ -202,7 +203,7 @@
       tab_header(
         title = glue("ZAMBIA MECHANISM PERFORMANCE SUMMARY AS OF {metadata$curr_pd}")
       )  %>% 
-      gtsave_extra("Images/USAID_partner_table_achv_levels.png")
+      gtsave_extra("Images/Adhoc/USAID_partner_table_achv_levels.png")
     
     # Standard table w/ colors
     df_ach_all_gt <- df_achv_all %>% 

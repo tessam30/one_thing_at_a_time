@@ -53,7 +53,7 @@
     
     
   # Create a gt loop to format indicators
-  legend_chunk <- gt::md(glue::glue("Achievement legend: <img src= '{selfdestructin5::legend_snapshot}' style='height:15px;'> "))
+  legend_chunk <- gt::md(glue::glue("<img src= '{selfdestructin5::legend}' style='height:15px;'> "))
 
 # Index Testing Modalities ============================================================================
 
