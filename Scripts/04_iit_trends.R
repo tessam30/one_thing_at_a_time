@@ -28,7 +28,7 @@
   # SI specific paths/functions  
     load_secrets()
     genie_path <- "Data/Genie-PSNUByIMs-Zambia-Daily-2023-07-26.zip"
-    site_path <- "Data/Genie-SiteByIMs-Zambia-Daily-2023-07-26.zip"
+    site_path <- return_latest(folder = si_path(), pattern = "Site_IM.*Zambia")
       
   # Grab metadata
    get_metadata(site_path)
@@ -41,7 +41,7 @@
 
 # LOAD DATA ============================================================================  
     df_site <- read_psd(site_path) %>% 
-      filter(funding_agency == "USAID") %>% 
+      filter(funding_agency == "USAID", fiscal_year < 2024) %>% 
       fix_mech_names() %>% 
       mutate(snu1 = str_remove_all(snu1, " Province")) %>% 
       clean_agency() %>% 
@@ -115,7 +115,7 @@
             plot.subtitle = element_markdown(),
             strip.text = element_markdown())
     
-    si_save("Images/TX_CURR_pediatric_growth_snu.png")
+    si_save("Images/Adhoc/TX_CURR_pediatric_growth_snu.png")
 
 
 # IIT ---------------------------------------------------------------------
@@ -144,7 +144,7 @@
     
     df_iit %>% 
       filter(#trendscoarse == "15+", 
-              trendscoarse == "<15",
+            trendscoarse == "<15",
              snu1 %ni% c("Eastern", "Southern")) %>% 
       mutate(snu1 = factor(snu1, v_tx_lrg)) %>% 
       filter(!is.na(snu1), period != min(period)) %>% 
@@ -158,7 +158,7 @@
                   size = 1.5, color = golden_sand) +
       facet_wrap(~snu1) +
       scale_size(label = comma) +
-      scale_x_discrete(labels = full_pds[2:7]) +
+      scale_x_discrete(labels = full_pds) +
       scale_y_continuous(limits = c(0,.25),
                          label = percent_format(1),
                          oob = oob_squish) +
@@ -172,8 +172,8 @@
       theme(panel.spacing = unit(.5, "line"),
             plot.subtitle = element_markdown())
     
-    si_save("Images/IIT_adult_increase_snu1.png", scale = 1.25)
-    si_save("Images/IIT_ped_increase_snu1.png", scale = 1.25)
+    si_save("Images/Adhoc/IIT_adult_increase_snu1.png", scale = 1.35)
+    si_save("Images/Adhoc/IIT_ped_increase_snu1.png", scale = 1.35)
 
 # sparklines ============================================================================
 
@@ -216,6 +216,9 @@
       fmt_percent(columns = where(is.numeric)) %>% 
       cols_label(snu1 = "",
                  spark_iit = "",
+                 FY21Q2 = "Q2",
+                 FY21Q4 = "Q3",
+                 FY21Q4 = "Q4",
                  FY22Q2 = "Q2",
                  FY22Q3 = "Q3",
                  FY22Q4 = "Q4",
@@ -227,13 +230,18 @@
         title = glue("INTERRUPTION IN TREATMENT SUMMARY BY PROVINCE"),
       ) %>% 
       tab_spanner(
+        label = "FY21",
+        columns = 2:4
+      ) %>% 
+      tab_spanner(
         label = "FY22",
-        columns = 2:3
+        columns = 5:8
       ) %>% 
       tab_spanner(
         label = "FY23",
-        columns = 5
+        columns = 9:11
       ) %>% 
+      
       tab_source_note(
         source_note = gt::md(glue("IIT = TX_ML / TX_CURR_LAG1 + TX_NEW\n
                         Source: {metadata$source}"))) %>% 
@@ -243,7 +251,7 @@
       ) %>% 
       shrink_rows() %>% 
       gt_theme_nytimes() %>% 
-      gtsave_extra("Images/USAID_iit_province.png")
+      gtsave_extra("Images/Adhoc/USAID_iit_province.png")
     
     
 # IIT BY MECHANISM SPARKLINES ---------------------------------------------
@@ -264,7 +272,7 @@
       rowwise() %>% 
       mutate(iit = tx_ml / sum(tx_curr_lag1, tx_new, na.rm = TRUE)) %>% 
       ungroup() %>% 
-      filter(period != min(period), mech_name %ni% c("ZIHA", "CHEKUP II"))
+      filter(period > "FY22Q1", mech_name %ni% c("ZIH", "CHEKUP II"))
     
     
     df_iit_spark_mech <- 
@@ -287,10 +295,10 @@
       fmt_percent(columns = where(is.numeric)) %>% 
       cols_label(mech_name = "",
                  spark_iit = "",
-                 FY23Q1 = "Q1",
                  FY22Q2 = "Q2",
                  FY22Q3 = "Q3",
                  FY22Q4 = "Q4",
+                 FY23Q1 = "Q1",
                  FY23Q2 = "Q2",
                  FY23Q3 = "Q3"
                  
@@ -313,7 +321,7 @@
       tab_options(
         source_notes.font.size = px(10)) %>% 
       gt_theme_nytimes() %>% 
-      gtsave_extra("Images/USAID_iit_mech.png")    
+      gtsave_extra("Images/Adhoc/USAID_iit_mech.png")    
     
     
 
@@ -356,26 +364,33 @@
                        palette = c(grey70k, grey90k, old_rose_light, scooter_med, grey10k),
                        label = F) %>% 
       fmt_percent(columns = where(is.numeric)) %>% 
-      cols_label(trendscoarse = "AGE",
+      cols_label(trendscoarse = "",
                  spark_iit = "",
-                 FY23Q1 = "Q1",
+                 FY21Q2 = "Q2",
+                 FY21Q3 = "Q3",
+                 FY21Q4 = "Q4",
+                 FY22Q1 = "Q1",
                  FY22Q2 = "Q2",
                  FY22Q3 = "Q3",
                  FY22Q4 = "Q4",
+                 FY23Q1 = "Q1",
                  FY23Q2 = "Q2",
                  FY23Q3 = "Q3"
-                 
-      ) %>% 
+                 ) %>% 
       tab_header(
         title = glue("INTERRUPTION IN TREATMENT SUMMARY BY AGE"),
       ) %>% 
       tab_spanner(
+        label = "FY21",
+        columns = 2:3
+      ) %>% 
+      tab_spanner(
         label = "FY22",
-        columns = 2:4
+        columns = 5:6
       ) %>% 
       tab_spanner(
         label = "FY23",
-        columns = 5
+        columns = 9:10
       ) %>% 
       sub_missing(columns = everything(), missing_text = "-") %>% 
       tab_source_note(
@@ -384,5 +399,5 @@
       tab_options(
         source_notes.font.size = px(10)) %>% 
       gt_theme_nytimes() %>% 
-      gtsave_extra("Images/USAID_iit_age.png")    
+      gtsave_extra("Images/Adhoc/USAID_iit_age.png")    
     

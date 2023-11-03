@@ -24,7 +24,7 @@
     
   # SI specific paths/functions  
     load_secrets()
-    genie_path <- "Data/Genie-PSNUByIMs-Zambia-Daily-2023-07-26.zip"
+    genie_path <- return_latest(folder = si_path(), pattern = "PSNU_IM.*Zambia")
       
   # Grab metadata
    get_metadata(genie_path)
@@ -53,8 +53,9 @@
         geom_col(aes(y = targets), fill = grey20k, position = position_nudge(x = -0.15), width = 0.75) +
         geom_col(aes(y = results_cumulative), fill = scooter, width = 0.75) +
         facet_wrap(enquo(facet_var), nrow = nrows, scales = scale_type) +
-        si_style_ygrid(facet_space = 0.25) +
-        scale_x_discrete(labels = c("FY22Q1", "", "", "",
+        si_style_ygrid(facet_space = 0.35) +
+        scale_x_discrete(labels = c("FY21Q1", "", "", "",
+                                    "FY22Q1", "", "", "",
                                     "FY23Q1", "", "")) +
         scale_y_continuous(labels = comma, expand = c(0, 0)) +
         geom_text(data = . %>% filter(qtr_flag == 1 | period == "FY22Q4"), 
@@ -170,7 +171,7 @@
         subtitle = "Gray bars are TX_CURR targets",
         caption = metadata$caption
       )
-    si_save(glue("Images/{metadata$curr_pd}_TX_CURR_trends.png"), scale = 1.25)
+    si_save(glue("Images/Adhoc/{metadata$curr_pd}_TX_CURR_trends.png"), scale = 1.25)
     
     # PEDS
     tx_curr_peds %>% 
@@ -181,7 +182,7 @@
         subtitle = "Gray bars are TX_CURR targets",
         caption = metadata$caption
       )
-    si_save(glue("Images/{metadata$curr_pd}_TX_CURR_pediatric_trends.png"), scale = 1.25)
+    si_save(glue("Images/Adhoc/{metadata$curr_pd}_TX_CURR_pediatric_trends.png"), scale = 1.25)
     
     # AYP
     tx_curr_ayp %>%
@@ -229,7 +230,7 @@
         caption = metadata$caption
       ) +
       coord_cartesian(clip = "off")
-    si_save(glue("Images/{metadata$curr_pd}_TX_CURR_SNU1_trends.png"), scale = 1.25)
+    si_save(glue("Images/Adhoc/{metadata$curr_pd}_TX_CURR_SNU1_trends.png"), scale = 1.25)
     
     # COPPERBELT
     tx_curr_cbelt %>% 
@@ -254,7 +255,7 @@
            subtitle = "Gray bars are TX_CURR targets",
            caption = metadata$caption) +
       coord_cartesian(clip = "off")
-    si_save(glue("Images/{metadata$curr_pd}_TX_CURR_PSNU_trends.png"), scale = 1.25)
+    si_save(glue("Images/Adhoc/{metadata$curr_pd}_TX_CURR_PSNU_trends.png"), scale = 1.25)
     
     # CENTRAL
     tx_curr_cntral %>% 
@@ -279,5 +280,5 @@
            subtitle = "Gray bars are TX_CURR targets",
            caption = metadata$caption) +
       coord_cartesian(clip = "off")
-    si_save(glue("Images/{metadata$curr_pd}_TX_CURR_CENTRAL_PSNU_trends.png"), scale = 1.25)
+    si_save(glue("Images/Adhoc/{metadata$curr_pd}_TX_CURR_CENTRAL_PSNU_trends.png"), scale = 1.25)
     
