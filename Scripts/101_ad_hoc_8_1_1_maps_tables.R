@@ -37,7 +37,10 @@
   
   # Map infrastructure
   cntry <- "Zambia"
-  spdf_pepfar <- gisr::get_vcpolygons(path = shpdata, name = "VcPepfarPolygons.shp")
+  spdf_pepfar <- gisr::get_vcpolygons(folderpath = shpdata, name = "VcPepfarPolygons.shp")
+  zmb_org <- grabr::datim_orgunits(cntry = cntry) %>% filter(orgunit_level == 5)
+  
+  # May need to rework below depending on gisr updates (use zmb_org)
   zmb_geo <- purrr::map(3:5, ~spdf_pepfar %>% gisr::extract_boundaries(country = cntry, 
                                                                        level = .x))
   names(zmb_geo) <- list("adm0", "snu1", "psnu")
@@ -322,4 +325,13 @@ df_msd %>% names()
   
   df_epi %>% names()
   
+  
+# FTF Flag  
+  tmp <- c("Chibombo", "Kabwe", "Kapiri-Mposhi", "Luano", "Mkushi", "Nyimba", "Sinda", "Petauke", "Masaiti", "Mpongwe")
+  paste(tmp, collapse ="|")
+  
+  zmb_org %>% 
+    filter(str_detect(orgunit_name, "Chibombo|Kabwe|Kapiri-Mposhi|Luano|Mkushi|Nyimba|Sinda|Petauke|Masaiti|Mpongwe")) %>% 
+    mutate(ftf = TRUE) %>% 
+    write.csv("Data/tmp.csv")
                    
